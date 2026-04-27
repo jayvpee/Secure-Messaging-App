@@ -11,7 +11,7 @@ class UserInterface(tk.Tk):
     def __init__(self):
         super().__init__()
 
-        self.base_url = "https://onscreen-mutt-catwalk.ngrok-free.dev"  # THIS WILL ALAWYS change when resstart the ngrok
+        self.base_url = "http://10.192.127.93:5000"  # THIS will no longer change
         self.current_user = None
         self.active_contact = None
 
