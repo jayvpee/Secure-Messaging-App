@@ -18,85 +18,235 @@ class UserInterface(tk.Tk):
         self.title("CipherChat")
         self.geometry("850x500")
 
+        self.option_add("*Entry.highlightThickness", 0)
+        self.option_add("*Entry.borderWidth", 0)
+        self.option_add("*Entry.relief", "flat")
+        self.option_add("*Entry.selectBackground", "#7e22ce")
+        self.option_add("*Entry.selectForeground", "#ffffff")
+        
         self.setup_widgets()
 
     def setup_widgets(self):
-        # left panel
-        left_frame = tk.Frame(self, bd=2, relief="groove")
-        left_frame.pack(side="left", fill="y", padx=10, pady=10)
+        # ---------- THEME COLORS ----------
+        self.configure(bg="#12001f")  # main window background
 
-        tk.Label(left_frame, text="User ID").pack(pady=5)
-        self.user_entry = tk.Entry(left_frame)
-        self.user_entry.pack(pady=5, fill="x", padx=10)
+        BG = "#12001f"
+        PANEL = "#1e293b"
+        CARD = "#2d1b4e"
+        TEXT = "#ffffff"
+        MUTED = "#d8c7ff"
+        ACCENT = "#a855f7"
+        ACCENT_DARK = "#7e22ce"
+        BUTTON_TEXT = "#000000"
+
+        FONT_MAIN = ("Arial", 11)
+        FONT_TITLE = ("Arial", 16, "bold")
+        FONT_HEADER = ("Arial", 13, "bold")
+
+        # ---------- MAIN LAYOUT ----------
+        main_frame = tk.Frame(self, bg=BG)
+        main_frame.pack(fill="both", expand=True, padx=15, pady=15)
+
+        # ---------- LEFT PANEL ----------
+        left_frame = tk.Frame(main_frame, bg=PANEL, bd=0, relief="flat")
+        left_frame.pack(side="left", fill="y", padx=(0, 15), pady=0)
+
+        tk.Label(
+            left_frame,
+            text="CipherChat",
+            bg=PANEL,
+            fg=TEXT,
+            font=FONT_TITLE
+        ).pack(pady=(15, 5))
+
+        tk.Label(
+            left_frame,
+            text="User ID",
+            bg=PANEL,
+            fg=MUTED,
+            font=FONT_MAIN
+        ).pack(pady=(15, 5))
+
+        self.user_entry = tk.Entry(
+            left_frame,
+            bg=CARD,
+            fg=TEXT,
+            insertbackground=TEXT,
+            relief="flat",
+            font=FONT_MAIN,
+            highlightthickness=0,
+            bd=0,
+            selectbackground="#7e22ce",
+            selectforeground="#ffffff"
+        )
+        self.user_entry.pack(pady=5, fill="x", padx=15, ipady=6)
 
         self.login_btn = tk.Button(
             left_frame,
-            text="Login/Register",
-            command=self.login_user
+            text="Login / Register",
+            command=self.login_user,
+            bg=ACCENT,
+            fg=BUTTON_TEXT,
+            activebackground=ACCENT_DARK,
+            activeforeground=BUTTON_TEXT,
+            relief="flat",
+            font=FONT_MAIN,
+            cursor="hand2"
         )
-        self.login_btn.pack(pady=5)
+        self.login_btn.pack(pady=10, fill="x", padx=15, ipady=5)
 
-        tk.Label(left_frame, text="Add Contact").pack(pady=5)
-        self.contact_entry = tk.Entry(left_frame)
-        self.contact_entry.pack(pady=5, fill="x", padx=10)
+        tk.Label(
+            left_frame,
+            text="Add Contact",
+            bg=PANEL,
+            fg=MUTED,
+            font=FONT_MAIN
+        ).pack(pady=(20, 5))
+
+        self.contact_entry = tk.Entry(
+            left_frame,
+            bg=CARD,
+            fg=TEXT,
+            insertbackground=TEXT,
+            relief="flat",
+            font=FONT_MAIN,
+            highlightthickness=0,
+            bd=0,
+            selectbackground="#7e22ce",
+            selectforeground="#ffffff"
+
+        )
+        self.contact_entry.pack(pady=5, fill="x", padx=15, ipady=6)
 
         self.add_contact_btn = tk.Button(
             left_frame,
             text="Add Contact",
-            command=self.add_contact
+            command=self.add_contact,
+            bg=ACCENT,
+            fg=BUTTON_TEXT,
+            activebackground=ACCENT_DARK,
+            activeforeground=BUTTON_TEXT,
+            relief="flat",
+            font=FONT_MAIN,
+            cursor="hand2"
         )
-        self.add_contact_btn.pack(pady=5)
+        self.add_contact_btn.pack(pady=8, fill="x", padx=15, ipady=5)
 
         self.start_chat_btn = tk.Button(
             left_frame,
             text="Start Chat",
-            command=self.start_chat
+            command=self.start_chat,
+            bg="#9333ea",
+            fg=BUTTON_TEXT,
+            activebackground="#6b21a8",
+            activeforeground=BUTTON_TEXT,
+            relief="flat",
+            font=FONT_MAIN,
+            cursor="hand2"
         )
-        self.start_chat_btn.pack(pady=5)
+        self.start_chat_btn.pack(pady=8, fill="x", padx=15, ipady=5)
 
-        self.contact_list = tk.Listbox(left_frame, height=15)
-        self.contact_list.pack(pady=10, fill="both", expand=True, padx=10)
+        tk.Label(
+            left_frame,
+            text="Contacts",
+            bg=PANEL,
+            fg=MUTED,
+            font=FONT_MAIN
+        ).pack(pady=(20, 5))
+
+        self.contact_list = tk.Listbox(
+            left_frame,
+            height=15,
+            bg=CARD,
+            fg=TEXT,
+            selectbackground="#c084fc",
+            selectforeground="#000000",
+            relief="flat",
+            font=FONT_MAIN,
+            highlightthickness=0,
+            bd=0
+        )
+        self.contact_list.pack(pady=(5, 15), fill="both", expand=True, padx=15)
         self.contact_list.bind("<<ListboxSelect>>", self.select_contact)
 
-        # right panel
-        right_frame = tk.Frame(self, bd=2, relief="groove")
-        right_frame.pack(side="right", fill="both", expand=True, padx=10, pady=10)
+        # ---------- RIGHT PANEL ----------
+        right_frame = tk.Frame(main_frame, bg=PANEL, bd=0, relief="flat")
+        right_frame.pack(side="right", fill="both", expand=True)
 
         self.chat_title = tk.Label(
             right_frame,
             text="No chat selected",
-            font=("Arial", 14, "bold")
+            bg=PANEL,
+            fg=TEXT,
+            font=FONT_TITLE
         )
-        self.chat_title.pack(pady=5)
+        self.chat_title.pack(pady=(15, 5))
 
         self.chat_box = tk.Text(
             right_frame,
             state="disabled",
             width=60,
-            height=20
+            height=20,
+            bg="#1a0b2e",
+            fg=TEXT,
+            insertbackground=TEXT,
+            relief="flat",
+            font=("Arial", 11),
+            wrap="word",
+            padx=12,
+            pady=12,
+            highlightthickness =0
         )
-        self.chat_box.pack(padx=10, pady=10, fill="both", expand=True)
+        self.chat_box.pack(padx=15, pady=10, fill="both", expand=True)
 
-        bottom_frame = tk.Frame(right_frame)
-        bottom_frame.pack(fill="x", padx=10, pady=10)
+        # ---------- BOTTOM MESSAGE BAR ----------
+        bottom_frame = tk.Frame(right_frame, bg=PANEL)
+        bottom_frame.pack(fill="x", padx=15, pady=(5, 15))
 
-        self.message_entry = tk.Entry(bottom_frame)
-        self.message_entry.pack(side="left", fill="x", expand=True, padx=8, pady=8)
+        self.message_entry = tk.Entry(
+            bottom_frame,
+            bg=CARD,
+            fg=TEXT,
+            insertbackground=TEXT,
+            relief="flat",
+            font=FONT_MAIN,
+            highlightthickness= 0,
+            bd=0,
+            selectbackground="#7e22ce",
+            selectforeground="#ffffff"
+        )
+        self.message_entry.pack(side="left", fill="x", expand=True, padx=(0, 10), ipady=8)
         self.message_entry.bind("<Return>", self.send_message_event)
 
         self.send_btn = tk.Button(
             bottom_frame,
             text="Send",
-            command=self.send_message
+            command=self.send_message,
+            bg=ACCENT,
+            fg=BUTTON_TEXT,
+            activebackground=ACCENT_DARK,
+            activeforeground=BUTTON_TEXT,
+            relief="flat",
+            font=FONT_MAIN,
+            cursor="hand2",
+            width=10
         )
-        self.send_btn.pack(side="left", padx=5)
+        self.send_btn.pack(side="left", padx=5, ipady=5)
 
         self.fetch_btn = tk.Button(
             bottom_frame,
             text="Fetch",
-            command=self.fetch_messages
+            command=self.fetch_messages,
+            bg="#64748b",
+            fg=BUTTON_TEXT,
+            activebackground="#475569",
+            activeforeground=BUTTON_TEXT,
+            relief="flat",
+            font=FONT_MAIN,
+            cursor="hand2",
+            width=10
         )
-        self.fetch_btn.pack(side="left", padx=5)
+        self.fetch_btn.pack(side="left", padx=5, ipady=5)
 
     def login_user(self):
         user_id = self.user_entry.get().strip()
