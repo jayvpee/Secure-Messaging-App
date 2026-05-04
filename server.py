@@ -1,51 +1,51 @@
 """server.py
 Flask API server for the secure messaging app.
 """
- 
 from flask import Flask, request, jsonify
 from message_handler import MessageHandler
  
 app = Flask(__name__)
 handler = MessageHandler()
  
- 
 @app.route("/register", methods=["POST"])
 def register():
-    user_id = request.json.get("user_id", "").strip()
-    if not user_id:
-        return jsonify({"success": False, "error": "Missing user_id"}), 400
- 
-    success = handler.register_user(user_id)
+    data = request.json
+    success = handler.register_user(data.get("user_id", ""), data.get("public_key", ""))
     return jsonify({"success": success})
- 
+
+@app.route("/get_key", methods=["GET"])
+def get_key():
+    public_key = handler.get_public_key(request.args.get("user_id", ""))
+    if public_key:
+        return jsonify({"success": True, "public_key": public_key})
+    return jsonify({"success": False})
+
+@app.route("/init_session", methods=["POST"])
+def init_session():
+    data = request.json
+    success = handler.store_session(
+        data.get("sender"), data.get("receiver"), 
+        data.get("sender_key"), data.get("receiver_key")
+    )
+    return jsonify({"success": success})
+
+@app.route("/get_session", methods=["GET"])
+def get_session():
+    session_data = handler.get_session(request.args.get("user_id"), request.args.get("contact"))
+    if session_data:
+        return jsonify({"success": True, "wrapped_key": session_data["my_key"]})
+    return jsonify({"success": False})
  
 @app.route("/send", methods=["POST"])
 def send():
     data = request.json
-    sender = data.get("sender", "").strip()
-    receiver = data.get("receiver", "").strip()
-    message = data.get("message", "").strip()
- 
-    if not sender or not receiver or not message:
-        return jsonify({"success": False, "error": "Missing fields"}), 400
- 
-
-    success = handler.send_message(sender, receiver, message)
+    success = handler.send_message(data.get("sender"), data.get("receiver"), data.get("ciphertext"))
     return jsonify({"success": success})
- 
  
 @app.route("/conversation", methods=["GET"])
 def conversation():
-    user_id = request.args.get("user_id", "").strip()
-    contact = request.args.get("contact", "").strip()
- 
-    if not user_id or not contact:
-        return jsonify([])
- 
-    convo = handler.get_conversation(user_id, contact)
+    convo = handler.get_conversation(request.args.get("user_id"), request.args.get("contact"))
     return jsonify(convo)
- 
  
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
- 

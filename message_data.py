@@ -1,37 +1,34 @@
 """message_data.py
-Stores user and message data classes.
+Stores user, session, and message data classes.
 """
 
-
 class User:
-    def __init__(self, user_id: str):
+    def __init__(self, user_id: str, public_key: str):
         self.user_id = user_id
+        self.public_key = public_key
         self.contacts = []
 
     @classmethod
-    def create_user(cls, user_id: str):
-        if not user_id or not user_id.strip():
+    def create_user(cls, user_id: str, public_key: str):
+        if not user_id or not user_id.strip() or not public_key:
             return None
-        return cls(user_id.strip())
+        return cls(user_id.strip(), public_key)
 
     def add_contact(self, contact_id: str) -> bool:
-        contact_id = contact_id.strip()
-        if not contact_id:
+        if not contact_id.strip() or contact_id in self.contacts:
             return False
-        if contact_id in self.contacts:
-            return False
-        self.contacts.append(contact_id)
+        self.contacts.append(contact_id.strip())
         return True
 
+class Session:
+    def __init__(self, user1: str, user2: str, user1_wrapped_key: str, user2_wrapped_key: str):
+        self.user1 = user1
+        self.user2 = user2
+        self.user1_wrapped_key = user1_wrapped_key
+        self.user2_wrapped_key = user2_wrapped_key
 
 class Message:
-    def __init__(self, sender: str, receiver: str, message_content: str):
+    def __init__(self, sender: str, receiver: str, ciphertext: str):
         self.sender = sender
         self.receiver = receiver
-        self.message_content = message_content
-
-    @classmethod
-    def compose_message(cls, sender: str, receiver: str, message_content: str):
-        if not sender or not receiver or not message_content.strip():
-            return None
-        return cls(sender, receiver, message_content.strip())
+        self.ciphertext = ciphertext

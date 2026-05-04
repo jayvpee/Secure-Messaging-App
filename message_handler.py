@@ -1,78 +1,61 @@
 """message_handler.py
-Handles message operations of the messaging app.
+Handles message operations and data storage for the backend.
 """
 
-from message_encryption import Encryption
-from message_data import User, Message
-
+from message_data import User, Session, Message
 
 class MessageHandler:
     def __init__(self):
-        self.encryption = Encryption()
         self.users = {}
+        self.sessions = []
         self.messages = []
 
-    def register_user(self, user_id: str) -> bool:
+    def register_user(self, user_id: str, public_key: str) -> bool:
         if user_id in self.users:
+            self.users[user_id].public_key = public_key
             return True
 
-        user = User.create_user(user_id)
+        user = User.create_user(user_id, public_key)
         if user is None:
             return False
 
         self.users[user_id] = user
         return True
 
-    def add_contact(self, user_id: str, contact_id: str) -> bool:
+    def get_public_key(self, user_id: str):
         user = self.users.get(user_id)
-        if user is None:
-            return False
-        return user.add_contact(contact_id)
+        return user.public_key if user else None
 
-    def send_message(self, sender: str, receiver: str, message: str) -> bool:
-        if not sender or not receiver or not message.strip():
-            return False
+    def store_session(self, user1: str, user2: str, key1: str, key2: str) -> bool:
+        # Check if session already exists
+        for s in self.sessions:
+            if (s.user1 == user1 and s.user2 == user2) or (s.user1 == user2 and s.user2 == user1):
+                return False # Session exists
+        
+        self.sessions.append(Session(user1, user2, key1, key2))
+        return True
 
-        encrypted = self.encryption.encrypt(message)
-        msg = Message.compose_message(sender, receiver, encrypted)
-        if msg is None:
-            return False
+    def get_session(self, user1: str, user2: str):
+        for s in self.sessions:
+            if s.user1 == user1 and s.user2 == user2:
+                return {"my_key": s.user1_wrapped_key}
+            elif s.user1 == user2 and s.user2 == user1:
+                return {"my_key": s.user2_wrapped_key}
+        return None
 
-        self.messages.append(msg)
+    def send_message(self, sender: str, receiver: str, ciphertext: str) -> bool:
+        if not ciphertext:
+            return False
+        self.messages.append(Message(sender, receiver, ciphertext))
         return True
 
     def get_conversation(self, user_id: str, contact_id: str) -> list:
-        if not user_id or not contact_id:
-            return []
-
         conversation = []
-
         for msg in self.messages:
-            is_outgoing = msg.sender == user_id and msg.receiver == contact_id
-            is_incoming = msg.sender == contact_id and msg.receiver == user_id
-
-            if is_outgoing or is_incoming:
-                decrypted = self.encryption.decrypt(msg.message_content)
-
-                if is_outgoing:
-                    conversation.append(f"You: {decrypted}")
-                else:
-                    conversation.append(f"{msg.sender}: {decrypted}")
-
+            if (msg.sender == user_id and msg.receiver == contact_id) or \
+               (msg.sender == contact_id and msg.receiver == user_id):
+                conversation.append({
+                    "sender": msg.sender,
+                    "ciphertext": msg.ciphertext
+                })
         return conversation
-
-    def get_sent_messages(self, user_id: str, contact_id: str) -> list:
-        sent = []
-        for msg in self.messages:
-            if msg.sender == user_id and msg.receiver == contact_id:
-                decrypted = self.encryption.decrypt(msg.message_content)
-                sent.append(f"You: {decrypted}")
-        return sent
-
-    def receive_messages(self, user_id: str, contact_id: str) -> list:
-        received = []
-        for msg in self.messages:
-            if msg.sender == contact_id and msg.receiver == user_id:
-                decrypted = self.encryption.decrypt(msg.message_content)
-                received.append(f"{msg.sender}: {decrypted}")
-        return received
