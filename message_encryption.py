@@ -1,7 +1,3 @@
-"""message_encryption.py
-Implements Session Key generation and message encryption.
-"""
-
 import os
 import base64
 from cryptography.hazmat.primitives.asymmetric import x25519
@@ -11,7 +7,6 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 class Encryption:
     def __init__(self):
-        # Generate local identity key
         self.private_key = x25519.X25519PrivateKey.generate()
         self.public_key = self.private_key.public_key()
         
@@ -25,11 +20,9 @@ class Encryption:
         return self.public_key_b64
 
     def generate_session_key(self) -> bytes:
-        """Generates a cryptographically secure 32-byte session key."""
         return os.urandom(32)
 
     def wrap_session_key(self, session_key: bytes, receiver_pub_key_b64: str) -> str:
-        """Encrypts the session key using X25519 asymmetric flow so it can be safely sent."""
         receiver_pub_bytes = base64.urlsafe_b64decode(receiver_pub_key_b64.encode('utf-8'))
         receiver_public_key = x25519.X25519PublicKey.from_public_bytes(receiver_pub_bytes)
 
@@ -54,7 +47,6 @@ class Encryption:
         return base64.urlsafe_b64encode(payload).decode('utf-8')
 
     def unwrap_session_key(self, wrapped_key_b64: str) -> bytes:
-        """Decrypts the session key using the local private key."""
         payload = base64.urlsafe_b64decode(wrapped_key_b64.encode('utf-8'))
 
         ephemeral_public_bytes = payload[:32]
@@ -74,18 +66,14 @@ class Encryption:
         return decryptor.update(ciphertext) + decryptor.finalize()
 
     def encrypt_message(self, plaintext: str, session_key: bytes) -> str:
-        """Encrypts a message using the active AES session key."""
         nonce = os.urandom(16)
         cipher = Cipher(algorithms.AES(session_key), modes.CTR(nonce))
         encryptor = cipher.encryptor()
         ciphertext = encryptor.update(plaintext.encode('utf-8')) + encryptor.finalize()
-        
-        # Only need to send the nonce and the ciphertext now
         payload = nonce + ciphertext
         return base64.urlsafe_b64encode(payload).decode('utf-8')
 
     def decrypt_message(self, ciphertext_b64: str, session_key: bytes) -> str:
-        """Decrypts a message using the active AES session key."""
         payload = base64.urlsafe_b64decode(ciphertext_b64.encode('utf-8'))
         nonce = payload[:16]
         ciphertext = payload[16:]
